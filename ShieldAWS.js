@@ -113,3 +113,4 @@ async function verificarCommand(args, message) {
 
 // Logar o bot usando o token
 client.login('YOUR_BOT_TOKEN');
+
