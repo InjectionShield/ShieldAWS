@@ -39,6 +39,9 @@ client.on('message', async (message) => {
       case 'verificar':
         await verificarCommand(args, message);
         break;
+      case 'ajuda':
+        exibirAjuda(message);
+        break;
       // Adicione outros comandos aqui
       default:
         message.reply('Comando inválido!');
@@ -109,6 +112,17 @@ async function verificarCommand(args, message) {
       }
     }
   }
+}
+
+// Comando 'ajuda'
+function exibirAjuda(message) {
+  const helpEmbed = new Discord.MessageEmbed()
+    .setColor('#0099ff')
+    .setTitle('Ajuda do Bot')
+    .setDescription('Lista de comandos disponíveis:')
+    .addField('&verificar <nome_da_instância>', 'Verifica as regras de firewall de uma instância específica', false)
+    .addField('&ajuda', 'Exibe a lista de comandos disponíveis', false);
+  message.channel.send(helpEmbed);
 }
 
 // Logar o bot usando o token
