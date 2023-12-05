@@ -1,11 +1,13 @@
 const Discord = require('discord.js');
 const AWS = require('aws-sdk');
+require('dotenv').config(); // Utilize um arquivo .env para armazenar suas variáveis sensíveis
 
 const client = new Discord.Client();
 
+// Configuração segura para as credenciais da AWS
 const awsConfig = {
-  accessKeyId: 'YOUR_AWS_ACCESS_KEY',
-  secretAccessKey: 'YOUR_AWS_SECRET_KEY',
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_KEY,
   region: 'us-east-1'
 };
 AWS.config.update(awsConfig);
@@ -98,35 +100,40 @@ async function verificarCommand(args, message) {
     ]
   };
 
-  const data = await ec2.describeInstances(params).promise();
+  try {
+    const data = await ec2.describeInstances(params).promise();
 
-  if (data.Reservations.length === 0) {
-    return message.reply(`Nenhuma instância com o nome '${instanceName}' foi encontrada!`);
-  }
+    if (data.Reservations.length === 0) {
+      return message.reply(`Nenhuma instância com o nome '${instanceName}' foi encontrada!`);
+    }
 
-  for (const reservation of data.Reservations) {
-    for (const instance of reservation.Instances) {
-      if (instance.SecurityGroups.length === 0) {
-        return message.reply(`A instância '${instanceName}' não possui regras de firewall ativas!`);
-      }
+    for (const reservation of data.Reservations) {
+      for (const instance of reservation.Instances) {
+        if (instance.SecurityGroups.length === 0) {
+          return message.reply(`A instância '${instanceName}' não possui regras de firewall ativas!`);
+        }
 
-      for (const securityGroup of instance.SecurityGroups) {
-        const rulesParams = {
-          GroupIds: [securityGroup.GroupId]
-        };
+        for (const securityGroup of instance.SecurityGroups) {
+          const rulesParams = {
+            GroupIds: [securityGroup.GroupId]
+          };
 
-        const sgData = await ec2.describeSecurityGroups(rulesParams).promise();
+          const sgData = await ec2.describeSecurityGroups(rulesParams).promise();
 
-        for (const rule of sgData.SecurityGroups[0].IpPermissions) {
-          const type = rule.IpProtocol === '-1' ? 'All' : rule.IpProtocol;
-          const port = rule.FromPort === -1 ? 'All' : rule.FromPort;
-          const source = rule.IpRanges.length > 0 ? rule.IpRanges[0].CidrIp : 'All';
-          message.reply(`Regra '${type}' na porta '${port}' para '${source}'`);
+          for (const rule of sgData.SecurityGroups[0].IpPermissions) {
+            const type = rule.IpProtocol === '-1' ? 'All' : rule.IpProtocol;
+            const port = rule.FromPort === -1 ? 'All' : rule.FromPort;
+            const source = rule.IpRanges.length > 0 ? rule.IpRanges[0].CidrIp : 'All';
+            message.reply(`Regra '${type}' na porta '${port}' para '${source}'`);
+          }
         }
       }
     }
+  } catch (error) {
+    throw new Error(`Erro ao verificar a instância '${instanceName}': ${error.message}`);
   }
 }
 
-client.login('YOUR_BOT_TOKEN');
+client.login(process.env.BOT_TOKEN); // Utilize um arquivo .env para armazenar seu token do bot Discord
+
 
