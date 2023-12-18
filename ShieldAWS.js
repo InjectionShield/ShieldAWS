@@ -4,7 +4,6 @@ require('dotenv').config(); // Utilize um arquivo .env para armazenar suas vari�
 
 const client = new Discord.Client();
 
-// Configuração segura para as credenciais da AWS
 const awsConfig = {
   accessKeyId: process.env.AWS_ACCESS_KEY,
   secretAccessKey: process.env.AWS_SECRET_KEY,
@@ -44,7 +43,6 @@ async function exibirComando(command, message) {
         .addField('Exemplo', '&verificar MinhaInstancia', false);
       message.channel.send(verificarEmbed);
       break;
-    // Adicione outros casos conforme necessário
     default:
       message.reply('Comando desconhecido!');
       break;
@@ -66,7 +64,6 @@ async function executarComando(command, args, message) {
         await exibirComando(args[0], message);
       }
       break;
-    // Adicione outros casos conforme necessário
     default:
       message.reply('Comando inválido!');
       break;
